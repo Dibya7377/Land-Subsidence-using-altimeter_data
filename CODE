@@ -1,0 +1,314 @@
+import h5py
+
+def inspect_file(path):
+    with h5py.File(path, 'r') as f:
+        print("File structure:")
+        def print_attrs(name, obj):
+            print(f"{name} (Type: {type(obj).__name__})")
+        f.visititems(print_attrs)
+
+inspect_file(r"D:\LAND SUBSIDENCE\ICESAT\deep\processed_ATL08_20190410140326_01880306_006_02.h5")
+
+
+file_paths = [
+    r"D:\LAND SUBSIDENCE\ICESAT\deep\processed_ATL08_20190410140326_01880306_006_02.h5",
+    r"D:\LAND SUBSIDENCE\ICESAT\deep\processed_ATL08_20200407204228_01880706_006_02.h5",
+    r"D:\LAND SUBSIDENCE\ICESAT\deep\processed_ATL08_20210522130845_08971102_006_01.h5",
+    r"D:\LAND SUBSIDENCE\ICESAT\deep\processed_ATL08_20220103142130_01881406_006_01.h5",
+    r"D:\LAND SUBSIDENCE\ICESAT\deep\processed_ATL08_20230402164034_01881906_006_02.h5",
+    r"D:\LAND SUBSIDENCE\ICESAT\deep\processed_ATL08_20240330231829_01882306_006_01.h5"
+]
+
+import h5py
+import pandas as pd
+from datetime import datetime, timedelta
+
+def extract_elevation_data(file_path):
+    data_frames = []
+    with h5py.File(file_path, 'r') as f:
+        # Loop through all beams
+        for beam in ['gt1l', 'gt1r', 'gt2l', 'gt2r']:
+            if beam in f:
+                group = f[beam]['land_segments']
+                # Check if terrain group exists
+                if 'terrain' in group:
+                    terrain = group['terrain']
+                    # Extract datasets
+                    elevation = terrain['h_te_best_fit'][:]
+                    delta_time = group['delta_time'][:]
+                    lat = group['latitude'][:]
+                    lon = group['longitude'][:]
+                    # Convert delta_time to datetime
+                    base_date = datetime(2018, 1, 1)
+                    timestamps = [base_date + timedelta(seconds=float(dt)) for dt in delta_time]
+                    # Build DataFrame
+                    df = pd.DataFrame({
+                        'timestamp': timestamps,
+                        'elevation': elevation,
+                        'latitude': lat,
+                        'longitude': lon,
+                        'beam': beam
+                    })
+                    data_frames.append(df)
+    # Combine all beams for this file
+    if data_frames:
+        return pd.concat(data_frames, ignore_index=True)
+    else:
+        return pd.DataFrame()  # Empty if no valid beam found
+
+# Example usage:
+file_paths = [
+    r"D:\LAND SUBSIDENCE\ICESAT\deep\processed_ATL08_20190410140326_01880306_006_02.h5",
+    r"D:\LAND SUBSIDENCE\ICESAT\deep\processed_ATL08_20200407204228_01880706_006_02.h5",
+    r"D:\LAND SUBSIDENCE\ICESAT\deep\processed_ATL08_20210522130845_08971102_006_01.h5",
+    r"D:\LAND SUBSIDENCE\ICESAT\deep\processed_ATL08_20220103142130_01881406_006_01.h5",
+    r"D:\LAND SUBSIDENCE\ICESAT\deep\processed_ATL08_20230402164034_01881906_006_02.h5",
+    r"D:\LAND SUBSIDENCE\ICESAT\deep\processed_ATL08_20240330231829_01882306_006_01.h5"
+]
+
+all_dfs = []
+for path in file_paths:
+    df = extract_elevation_data(path)
+    if not df.empty:
+        df['file_year'] = df['timestamp'].apply(lambda x: x.year)
+        all_dfs.append(df)
+
+combined_df = pd.concat(all_dfs, ignore_index=True)
+
+def extract_elevation_data(file_path):
+    with h5py.File(file_path, 'r') as f:
+        # Check available ground tracks (gt1l, gt1r, etc.)
+        tracks = [k for k in f.keys() if k.startswith('gt')]
+        
+        # Process first track (modify as needed)
+        track = tracks[0]
+        elevation = f[f'{track}/land_segments/terrain/h_te_best_fit'][:]
+        delta_time = f[f'{track}/land_segments/delta_time'][:]
+        lat = f[f'{track}/land_segments/latitude'][:]
+        lon = f[f'{track}/land_segments/longitude'][:]
+    
+    # Rest of processing remains the same
+
+import h5py
+import pandas as pd
+from datetime import datetime, timedelta
+
+def extract_elevation_data(file_path):
+    data_frames = []
+    with h5py.File(file_path, 'r') as f:
+        # Loop through all beams
+        for beam in ['gt1l', 'gt1r', 'gt2l', 'gt2r']:
+            if beam in f:
+                group = f[beam]['land_segments']
+                # Check if terrain group exists
+                if 'terrain' in group:
+                    terrain = group['terrain']
+                    # Extract datasets
+                    elevation = terrain['h_te_best_fit'][:]
+                    delta_time = group['delta_time'][:]
+                    lat = group['latitude'][:]
+                    lon = group['longitude'][:]
+                    # Convert delta_time to datetime
+                    base_date = datetime(2018, 1, 1)
+                    timestamps = [base_date + timedelta(seconds=float(dt)) for dt in delta_time]
+                    # Build DataFrame
+                    df = pd.DataFrame({
+                        'timestamp': timestamps,
+                        'elevation': elevation,
+                        'latitude': lat,
+                        'longitude': lon,
+                        'beam': beam
+                    })
+                    data_frames.append(df)
+    # Combine all beams for this file
+    if data_frames:
+        return pd.concat(data_frames, ignore_index=True)
+    else:
+        return pd.DataFrame()  # Empty if no valid beam found
+
+# Example usage:
+file_paths = [
+    r"D:\LAND SUBSIDENCE\ICESAT\deep\processed_ATL08_20190410140326_01880306_006_02.h5",
+    r"D:\LAND SUBSIDENCE\ICESAT\deep\processed_ATL08_20200407204228_01880706_006_02.h5",
+    r"D:\LAND SUBSIDENCE\ICESAT\deep\processed_ATL08_20210522130845_08971102_006_01.h5",
+    r"D:\LAND SUBSIDENCE\ICESAT\deep\processed_ATL08_20220103142130_01881406_006_01.h5",
+    r"D:\LAND SUBSIDENCE\ICESAT\deep\processed_ATL08_20230402164034_01881906_006_02.h5",
+    r"D:\LAND SUBSIDENCE\ICESAT\deep\processed_ATL08_20240330231829_01882306_006_01.h5"
+]
+
+all_dfs = []
+for path in file_paths:
+    df = extract_elevation_data(path)
+    if not df.empty:
+        df['file_year'] = df['timestamp'].apply(lambda x: x.year)
+        all_dfs.append(df)
+
+combined_df = pd.concat(all_dfs, ignore_index=True)
+
+import numpy as np
+
+# Remove NaN and extreme values (e.g., outside 1st/99th percentile)
+q_low = combined_df['elevation'].quantile(0.01)
+q_high = combined_df['elevation'].quantile(0.99)
+clean_df = combined_df[(combined_df['elevation'] > q_low) & (combined_df['elevation'] < q_high)]
+
+import matplotlib.pyplot as plt
+
+plt.figure(figsize=(10, 6))
+sc = plt.scatter(
+    clean_df['longitude'], clean_df['latitude'],
+    c=clean_df['file_year'], cmap='viridis', s=3, alpha=0.7
+)
+plt.colorbar(sc, label='Year')
+plt.xlabel('Longitude')
+plt.ylabel('Latitude')
+plt.title('ICESat-2 Elevation Measurements by Year')
+plt.show()
+
+
+# Group by year and calculate mean elevation
+yearly = clean_df.groupby('file_year')['elevation'].median().reset_index()
+
+plt.figure(figsize=(8, 5))
+plt.plot(yearly['file_year'], yearly['elevation'], marker='o')
+plt.xlabel('Year')
+plt.ylabel('Mean Elevation (m)')
+plt.title('Mean Elevation Change Over Years')
+plt.grid(True)
+plt.show()
+
+
+clean_df['month'] = clean_df['timestamp'].dt.to_period('M')
+monthly = clean_df.groupby('month')['elevation'].median().reset_index()
+monthly['month'] = monthly['month'].dt.to_timestamp()
+
+plt.figure(figsize=(12, 5))
+plt.plot(monthly['month'], monthly['elevation'], marker='.')
+plt.xlabel('Month')
+plt.ylabel('Mean Elevation (m)')
+plt.title('Monthly Mean Elevation Change')
+plt.grid(True)
+plt.show()
+
+
+start_elev = yearly.iloc[0]['elevation']
+end_elev = yearly.iloc[-1]['elevation']
+subsidence = start_elev - end_elev
+print(f"Estimated mean elevation change (subsidence) from {yearly.iloc[0]['file_year']} to {yearly.iloc[-1]['file_year']}: {subsidence:.2f} m")
+
+clean_df = combined_df[
+    (combined_df['elevation'] > q_low) & 
+    (combined_df['elevation'] < q_high)
+].copy()  # <-- Add .copy() here
+
+grid_size = 0.01
+clean_df['lat_bin'] = (clean_df['latitude'] // grid_size) * grid_size
+clean_df['lon_bin'] = (clean_df['longitude'] // grid_size) * grid_size
+
+clean_df.loc[:, 'lat_bin'] = (clean_df['latitude'] // grid_size) * grid_size
+clean_df.loc[:, 'lon_bin'] = (clean_df['longitude'] // grid_size) * grid_size
+
+
+# Define grid size (e.g., 0.01 degrees)
+grid_size = 0.01
+clean_df['lat_bin'] = (clean_df['latitude'] // grid_size) * grid_size
+clean_df['lon_bin'] = (clean_df['longitude'] // grid_size) * grid_size
+
+# Calculate mean elevation per bin and year
+binned = clean_df.groupby(['lat_bin', 'lon_bin', 'file_year'])['elevation'].mean().reset_index()
+
+# Pivot to get start and end year elevations per bin
+pivot = binned.pivot_table(index=['lat_bin', 'lon_bin'], columns='file_year', values='elevation')
+
+# Calculate elevation change (subsidence) per bin
+pivot['subsidence'] = pivot[pivot.columns[-1]] - pivot[pivot.columns[0]]
+
+# Plot subsidence map
+plt.figure(figsize=(10, 6))
+plt.scatter(pivot.index.get_level_values('lon_bin'), pivot.index.get_level_values('lat_bin'),
+            c=pivot['subsidence'], cmap='RdBu', s=40, marker='s')
+plt.colorbar(label='Elevation Change (m)')
+plt.xlabel('Longitude')
+plt.ylabel('Latitude')
+plt.title('Spatial Pattern of Elevation Change (Subsidence)')
+plt.show()
+
+print("Latitude range:", combined_df['latitude'].min(), combined_df['latitude'].max())
+print("Longitude range:", combined_df['longitude'].min(), combined_df['longitude'].max())
+
+print("2019 points:", combined_df[combined_df['file_year'] == 2019].shape[0])
+print("2024 points:", combined_df[combined_df['file_year'] == 2024].shape[0])
+
+grid_size = 0.05  # Try even 0.08 if needed
+
+print("Number of overlapping bins:", merged.shape[0])
+print(merged[['lat_bin', 'lon_bin', 'elevation_2019', 'elevation_2024', 'elev_change']].head())
+
+
+from scipy.spatial import cKDTree
+
+# Build KDTree for 2024 points
+tree_2024 = cKDTree(data_2024[['latitude', 'longitude']].values)
+distances, indices = tree_2024.query(data_2019[['latitude', 'longitude']].values, distance_upper_bound=0.05)  # 0.05 degrees ~5 km
+
+matches = distances != np.inf
+matched_2019 = data_2019[matches]
+matched_2024 = data_2024.iloc[indices[matches]].reset_index(drop=True)
+
+# Calculate elevation change
+elev_change = matched_2024['elevation'].values - matched_2019['elevation'].values
+
+# Plot
+plt.figure(figsize=(10, 6))
+sc = plt.scatter(
+    matched_2019['longitude'], matched_2019['latitude'],
+    c=elev_change, cmap='RdBu', s=40, marker='s'
+)
+plt.colorbar(sc, label='Elevation Change (m, 2024-2019)')
+plt.xlabel('Longitude')
+plt.ylabel('Latitude')
+plt.title('Elevation Change (2019 to 2024) - Nearest Neighbor')
+plt.xlim(74.03, 74.11)
+plt.ylim(27.05, 27.13)
+plt.show()
+
+print("Mean elevation change (2024-2019):", np.mean(elev_change), "m")
+print("Std dev of elevation change:", np.std(elev_change), "m")
+
+
+import geopandas as gpd
+
+# Load your AOI shapefile
+aoi = gpd.read_file("D:\\LAND SUBSIDENCE\\area\\area.shp")
+
+
+import matplotlib.pyplot as plt
+
+fig, ax = plt.subplots(figsize=(10, 6))
+
+# Plot your elevation change data (example with nearest-neighbor results)
+sc = ax.scatter(
+    matched_2019['longitude'], matched_2019['latitude'],
+    c=elev_change, cmap='RdBu', s=40, marker='s'
+)
+plt.colorbar(sc, label='Elevation Change (cm, 2024-2019)')
+
+# Overlay the AOI shapefile
+aoi.boundary.plot(ax=ax, color='black', linewidth=2)
+
+# Set axis limits to your data range
+ax.set_xlim(74.03, 74.11)
+ax.set_ylim(27.05, 27.13)
+
+ax.set_xlabel('Longitude')
+ax.set_ylabel('Latitude')
+ax.set_title('Elevation Change (2019 to 2024) with AOI Boundary')
+plt.show()
+
+
+import pandas as pd
+
+# Example: matched_2019, elev_change from your nearest-neighbor analysis
+output_df = matched_2019.copy()
+output_df['elev_change'] = elev_change
+output_df[['longitude', 'latitude', 'elev_change']].to_csv('elevation_change_2019_2024.csv', index=False)
